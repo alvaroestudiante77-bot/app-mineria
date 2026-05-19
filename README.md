@@ -1,186 +1,94 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
+# 🎓 Universidad de la Costa — Student Analytics Dashboard
+**Data Mining · Activity I: Data Visualization and Dashboard Deployment**  
+**José Escorcia-Gutierrez, Ph.D. · Dept. of Computer Science and Electronics**
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="Universidad de la Costa – Dashboard",
-    page_icon="🎓",
-    layout="wide",
-)
+---
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-    [data-testid="stAppViewContainer"] { background-color: #f4f6fb; }
-    .kpi-card {
-        background: linear-gradient(135deg, #003366 0%, #0055a5 100%);
-        border-radius: 14px; padding: 22px 18px; text-align: center; color: white;
-        box-shadow: 0 4px 16px rgba(0,51,102,0.18);
-    }
-    .kpi-value { font-size: 2.1rem; font-weight: 800; color: #ffd700; }
-    .kpi-label { font-size: 0.82rem; color: #cce0ff; margin-top: 5px;
-                 letter-spacing: 0.04em; text-transform: uppercase; }
-    .section-title { color: #003366; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.3rem; }
-</style>
-""", unsafe_allow_html=True)
+## 📋 Project Overview
 
-# ── Load data ─────────────────────────────────────────────────────────────────
-@st.cache_data
-def load_data():
-    return pd.read_csv("university_student_data.csv")
+This project performs exploratory data analysis and builds an interactive Streamlit dashboard on the `university_student_data.csv` dataset, which contains student admission, enrollment, retention, and satisfaction data from 2015 to 2024.
 
-df = load_data()
-DEPTS = ["Engineering Enrolled", "Business Enrolled", "Arts Enrolled", "Science Enrolled"]
+---
 
-# ── Sidebar filters ───────────────────────────────────────────────────────────
-st.sidebar.title("🔍 Filters")
-years         = sorted(df["Year"].unique())
-selected_years = st.sidebar.multiselect("Year(s)", years, default=years)
-terms          = sorted(df["Term"].unique())
-selected_terms = st.sidebar.multiselect("Term(s)", terms, default=terms)
-selected_depts = st.sidebar.multiselect("Department(s)", DEPTS, default=DEPTS)
+## 📂 File Structure
 
-filtered = df[df["Year"].isin(selected_years) & df["Term"].isin(selected_terms)]
+```
+├── app.py                        # Streamlit dashboard
+├── university_student_data.csv  # Dataset
+├── requirements.txt              # Python dependencies
+├── Activity_I_Notebook.ipynb    # Google Colab notebook (EDA + visualizations)
+└── README.md                    # This file
+```
 
-if filtered.empty:
-    st.warning("No data matches the selected filters.")
-    st.stop()
+---
 
-# ── Header ────────────────────────────────────────────────────────────────────
-st.markdown("## 🎓 Universidad de la Costa — Student Analytics Dashboard")
-st.markdown("**Data Mining · Dept. of Computer Science & Electronics · José Escorcia-Gutierrez, Ph.D.**")
-st.divider()
+## 📊 Dataset Columns
 
-# ── KPI Cards ─────────────────────────────────────────────────────────────────
-st.markdown("### 📊 Key Indicators")
-k1, k2, k3, k4, k5 = st.columns(5)
-kpis = [
-    (f"{int(filtered['Applications'].sum()):,}",          "Total Applications"),
-    (f"{int(filtered['Enrolled'].sum()):,}",               "Total Enrolled"),
-    (f"{filtered['Admitted'].sum()/filtered['Applications'].sum()*100:.1f}%", "Avg Admission Rate"),
-    (f"{filtered['Retention Rate (%)'].mean():.1f}%",      "Avg Retention Rate"),
-    (f"{filtered['Student Satisfaction (%)'].mean():.1f}%","Avg Satisfaction"),
-]
-for col, (val, label) in zip([k1, k2, k3, k4, k5], kpis):
-    col.markdown(f"""
-    <div class="kpi-card">
-        <div class="kpi-value">{val}</div>
-        <div class="kpi-label">{label}</div>
-    </div>""", unsafe_allow_html=True)
+| Column | Description |
+|---|---|
+| `Year` | Academic year (2015–2024) |
+| `Term` | Semester: Spring or Fall |
+| `Applications` | Number of applications received |
+| `Admitted` | Number of students admitted |
+| `Enrolled` | Number of students who enrolled |
+| `Retention Rate (%)` | % of enrolled students retained |
+| `Student Satisfaction (%)` | Average student satisfaction score |
+| `Engineering Enrolled` | Students enrolled in Engineering |
+| `Business Enrolled` | Students enrolled in Business |
+| `Arts Enrolled` | Students enrolled in Arts |
+| `Science Enrolled` | Students enrolled in Science |
 
-st.markdown("")
+---
 
-# ── Row 1: Applications/Enrolled trend + Retention trend ─────────────────────
-st.markdown("### 📈 Trends Over Time")
-c1, c2 = st.columns(2)
+## 🚀 Running the Dashboard Locally
 
-with c1:
-    st.markdown('<p class="section-title">Applications vs Enrolled by Year</p>', unsafe_allow_html=True)
-    y = filtered.groupby("Year")[["Applications", "Enrolled"]].sum().reset_index()
-    fig, ax = plt.subplots(figsize=(6, 3.5))
-    ax.plot(y["Year"], y["Applications"], marker="o", lw=2.2, color="#0055a5", label="Applications")
-    ax.plot(y["Year"], y["Enrolled"],     marker="s", lw=2.2, color="#ffd700", label="Enrolled")
-    ax.fill_between(y["Year"], y["Enrolled"], alpha=0.12, color="#0055a5")
-    ax.set_xlabel("Year"); ax.set_ylabel("Count"); ax.legend(); ax.grid(axis="y", alpha=0.3)
-    ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-    fig.tight_layout(); st.pyplot(fig); plt.close()
+```bash
+# 1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/universidad-dashboard.git
+cd universidad-dashboard
 
-with c2:
-    st.markdown('<p class="section-title">Retention Rate (%) Over Time</p>', unsafe_allow_html=True)
-    r = filtered.groupby("Year")["Retention Rate (%)"].mean().reset_index()
-    fig, ax = plt.subplots(figsize=(6, 3.5))
-    ax.plot(r["Year"], r["Retention Rate (%)"], marker="D", lw=2.2, color="#e63946")
-    ax.fill_between(r["Year"], r["Retention Rate (%)"], alpha=0.1, color="#e63946")
-    ax.set_ylim(80, 95); ax.set_xlabel("Year"); ax.set_ylabel("Retention Rate (%)")
-    ax.grid(axis="y", alpha=0.3)
-    ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-    fig.tight_layout(); st.pyplot(fig); plt.close()
+# 2. Install dependencies
+pip install -r requirements.txt
 
-# ── Row 2: Satisfaction bars + Dept pie ──────────────────────────────────────
-st.markdown("### 🏫 Satisfaction & Department Enrollment")
-c3, c4 = st.columns(2)
+# 3. Run the app
+streamlit run app.py
+```
 
-with c3:
-    st.markdown('<p class="section-title">Student Satisfaction (%) — Spring vs Fall</p>', unsafe_allow_html=True)
-    sat = filtered.groupby(["Year", "Term"])["Student Satisfaction (%)"].mean().reset_index()
-    fig, ax = plt.subplots(figsize=(6, 3.5))
-    for term, color, offset in [("Spring", "#2a9d8f", 0), ("Fall", "#e76f51", 0.38)]:
-        sub = sat[sat["Term"] == term]
-        if not sub.empty:
-            ax.bar(sub["Year"] + offset, sub["Student Satisfaction (%)"],
-                   width=0.36, label=term, color=color, alpha=0.88)
-    ax.set_xlabel("Year"); ax.set_ylabel("Satisfaction (%)"); ax.set_ylim(70, 95)
-    ax.legend(); ax.grid(axis="y", alpha=0.3)
-    ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-    fig.tight_layout(); st.pyplot(fig); plt.close()
+---
 
-with c4:
-    st.markdown('<p class="section-title">Enrollment Share by Department</p>', unsafe_allow_html=True)
-    active = [d for d in selected_depts if d in filtered.columns]
-    if active:
-        totals = {d: filtered[d].sum() for d in active}
-        labels = [d.replace(" Enrolled", "") for d in totals]
-        values = list(totals.values())
-        colors = ["#0055a5", "#ffd700", "#e63946", "#2a9d8f"][:len(labels)]
-        fig, ax = plt.subplots(figsize=(5, 3.5))
-        wedges, texts, autotexts = ax.pie(
-            values, labels=labels, autopct="%1.1f%%", colors=colors,
-            startangle=140, wedgeprops=dict(edgecolor="white", linewidth=1.5))
-        for at in autotexts: at.set_fontsize(9)
-        fig.tight_layout(); st.pyplot(fig); plt.close()
-    else:
-        st.info("Select at least one department in the sidebar.")
+## ☁️ Deployment on Streamlit Cloud
 
-# ── Row 3: Spring vs Fall total enrollment bar + satisfaction line ────────────
-st.markdown("### 🔄 Spring vs Fall Comparison")
-c5, c6 = st.columns(2)
+1. Push all files to a **public GitHub repository**.
+2. Go to [share.streamlit.io](https://share.streamlit.io) and log in.
+3. Click **New app** → select your repository and branch.
+4. Set **Main file path** to `app.py`.
+5. Click **Deploy**.
 
-with c5:
-    st.markdown('<p class="section-title">Total Enrolled: Spring vs Fall</p>', unsafe_allow_html=True)
-    tc = filtered.groupby("Term")["Enrolled"].sum()
-    fig, ax = plt.subplots(figsize=(5, 3.2))
-    bars = ax.bar(tc.index, tc.values, color=["#2a9d8f", "#e76f51"],
-                  edgecolor="white", linewidth=1.5, width=0.45)
-    for bar in bars:
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 30,
-                f"{int(bar.get_height()):,}", ha="center", fontsize=10, fontweight="bold")
-    ax.set_ylabel("Enrolled Students"); ax.grid(axis="y", alpha=0.3)
-    ax.set_ylim(0, tc.max() * 1.18)
-    fig.tight_layout(); st.pyplot(fig); plt.close()
+Make sure `university_student_data.csv` is in the root of the repository (same level as `app.py`).
 
-with c6:
-    st.markdown('<p class="section-title">Satisfaction Trend: Spring vs Fall</p>', unsafe_allow_html=True)
-    pivot = filtered.pivot_table(index="Year", columns="Term",
-                                  values="Student Satisfaction (%)", aggfunc="mean")
-    fig, ax = plt.subplots(figsize=(6, 3.2))
-    for term, color in [("Spring", "#2a9d8f"), ("Fall", "#e76f51")]:
-        if term in pivot.columns:
-            ax.plot(pivot.index, pivot[term], marker="o", color=color, lw=2, label=term)
-    ax.set_xlabel("Year"); ax.set_ylabel("Satisfaction (%)")
-    ax.legend(); ax.grid(axis="y", alpha=0.3)
-    ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-    fig.tight_layout(); st.pyplot(fig); plt.close()
+---
 
-# ── Row 4: Department enrollment trend ───────────────────────────────────────
-st.markdown("### 📚 Department Enrollment Trends Over Time")
-active_depts = [d for d in selected_depts if d in filtered.columns]
-if active_depts:
-    dy = filtered.groupby("Year")[active_depts].sum().reset_index()
-    fig, ax = plt.subplots(figsize=(11, 3.8))
-    palette = ["#0055a5", "#e63946", "#2a9d8f", "#f4a261"]
-    for i, dept in enumerate(active_depts):
-        ax.plot(dy["Year"], dy[dept], marker="o", lw=2.2,
-                color=palette[i % len(palette)], label=dept.replace(" Enrolled", ""))
-    ax.set_xlabel("Year"); ax.set_ylabel("Students Enrolled")
-    ax.legend(loc="upper left"); ax.grid(axis="y", alpha=0.3)
-    ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
-    fig.tight_layout(); st.pyplot(fig); plt.close()
+## 📈 Key Findings
 
-# ── Raw data ──────────────────────────────────────────────────────────────────
-st.divider()
-with st.expander("📋 View filtered raw data"):
-    st.dataframe(filtered.reset_index(drop=True), use_container_width=True)
+- **Applications** grew consistently from 2,500 (2015) to 3,500 (2024), a **+40% increase**.
+- **Retention rates** improved from 85% to 90%, showing stronger student success initiatives.
+- **Student satisfaction** rose from 78% to 88%, indicating improved institutional quality.
+- **Engineering** is the largest and fastest-growing department.
+- **Science enrollment** shows a slight downward trend in recent years.
+- Spring and Fall terms are nearly identical in enrollment volume, with minimal seasonal variation.
 
-st.caption("Activity I · Data Visualization and Dashboard Deployment · Universidad de la Costa")
+### 💡 Actionable Insight
+
+The university should investigate the **declining Science enrollment** trend while leveraging the success factors from Engineering to potentially reverse this pattern. Targeted recruitment campaigns for Science programs during Spring admissions could help balance departmental growth.
+
+---
+
+## 🛠️ Technologies Used
+
+- Python 3.10+
+- Streamlit
+- Pandas
+- Matplotlib
+- Google Colab (EDA notebook)
+- GitHub (version control)
+- Streamlit Cloud (deployment)
