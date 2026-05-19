@@ -10,18 +10,6 @@ This project performs exploratory data analysis and builds an interactive Stream
 
 ---
 
-## 📂 File Structure
-
-```
-├── app.py                        # Streamlit dashboard
-├── university_student_data.csv  # Dataset
-├── requirements.txt              # Python dependencies
-├── Activity_I_Notebook.ipynb    # Google Colab notebook (EDA + visualizations)
-└── README.md                    # This file
-```
-
----
-
 ## 📊 Dataset Columns
 
 | Column | Description |
@@ -37,36 +25,6 @@ This project performs exploratory data analysis and builds an interactive Stream
 | `Business Enrolled` | Students enrolled in Business |
 | `Arts Enrolled` | Students enrolled in Arts |
 | `Science Enrolled` | Students enrolled in Science |
-
----
-
-## 🚀 Running the Dashboard Locally
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/universidad-dashboard.git
-cd universidad-dashboard
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Run the app
-streamlit run app.py
-```
-
----
-
-## ☁️ Deployment on Streamlit Cloud
-
-1. Push all files to a **public GitHub repository**.
-2. Go to [share.streamlit.io](https://share.streamlit.io) and log in.
-3. Click **New app** → select your repository and branch.
-4. Set **Main file path** to `app.py`.
-5. Click **Deploy**.
-
-Make sure `university_student_data.csv` is in the root of the repository (same level as `app.py`).
-
----
 
 ## 📈 Key Findings
 
